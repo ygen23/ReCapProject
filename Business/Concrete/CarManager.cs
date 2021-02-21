@@ -1,10 +1,14 @@
 ﻿using Business.Abstract;
 using Business.Constants;
+using Business.ValidationRules.FluentValidation;
+using Core.Aspects.Autofac.Validation;
+using Core.CrossCuttingConcerns.Validation;
 using Core.Utilities.Results;
 using DataAccess.Abstract;
 using DataAccess.Concrete.InMemory;
 using Entities.Concrete;
 using Entities.DTOs;
+using FluentValidation;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -20,12 +24,9 @@ namespace Business.Concrete
             _carDal = carDal;
         }
 
+        [ValidationAspect(typeof(CarValidator))]
         public IResult Add(Car car)
         {
-            if (car.Description.Length < 2 || car.DailyPrice <= 0)
-            {
-                return new ErrorResult(Messages.CarNameOrDailyPriceInvalid);
-            }
                 _carDal.Add(car);
                 return new SuccessResult(Messages.CarAdded);
         }
@@ -40,12 +41,12 @@ namespace Business.Concrete
 
         public IDataResult<List<Car>> GetAll()
         {
-            //
-            //if (DateTime.Now.Hour == 23)
+
+            //if (DateTime.Now.Hour == 21)
             //{
             //    return new ErrorDataResult<List<Car>>("Sistem Bakım Zamanı");
             //}
-            ////
+            //
             return new SuccessDataResult<List<Car>>(_carDal.GetAll(),Messages.CarListed);
             
         }
@@ -65,11 +66,12 @@ namespace Business.Concrete
             return new SuccessDataResult<List<Car>>(_carDal.GetAll(c=>c.BrandId==id));
         }
 
-        public IDataResult<List<Car>> GetCarsByClorId(int id)
+        public IDataResult<List<Car>> GetCarsByColorId(int id)
         {
             return new SuccessDataResult<List<Car>>(_carDal.GetAll(c => c.ColorId == id));
         }
 
+        [ValidationAspect(typeof(CarValidator))]
         public IResult Update(Car car)
         {
             _carDal.Update(car);
